@@ -59,6 +59,14 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
             int i_aliens = 7;
             const int alienDefeatedReward = 5;
             const int alienAttackOccurs = 50;
+            String s_alienRaceEngaged = "Initial";
+            int i_alienRaceEngaged = 0;
+            int clanBasePopulation = 1000;
+            int yautjaClanPopulation = clanBasePopulation;
+            int xenomorphClanPopulation = clanBasePopulation;
+            int _MrPoopyButtholeClanPopulation = clanBasePopulation;
+            bool raceDefeated = false;
+
 
             //Stolen Goods Recieved
             bool b_stolenGoods = false;
@@ -235,11 +243,6 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                     Console.WriteLine("Unable to parse");
                 }
 
-                if (xenomorphClanDefeated == true && yautjaClanDefeated == true && _MrPoopyButtholeClanDefeated == true)
-                {
-                    allDefeated = true;
-                }
-
                 //Print currentResources
                 Console.WriteLine(">> Current Resources: " + currentResources);
 
@@ -263,6 +266,43 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                     {
                         WeaponsUpgrades();
                     }
+                }
+            }
+            void AlienClans(int i_alienRaceEngaged, int i_alienAttackStrength)
+            {
+                switch (i_alienRaceEngaged)
+                {
+                    case 0:
+                        yautjaClanPopulation = yautjaClanPopulation - i_alienAttackStrength;
+                        if (yautjaClanPopulation <= 0)
+                        {
+                            yautjaClanPopulation = 0;
+                            yautjaClanDefeated = true;
+                            Console.WriteLine("The Yautja Clan has been obliterated");
+                        }
+                        break;
+                    case 1:
+                        xenomorphClanPopulation = xenomorphClanPopulation - i_alienAttackStrength;
+                        if (xenomorphClanPopulation <= 0)
+                        {
+                            xenomorphClanPopulation = 0;
+                            xenomorphClanDefeated = true;
+                            Console.WriteLine("The Xenomorphs have been obliterated");
+                        }
+                        break;
+                    case 2:
+                        _MrPoopyButtholeClanPopulation = _MrPoopyButtholeClanPopulation - i_alienAttackStrength;
+                        if (_MrPoopyButtholeClanPopulation <= 0)
+                        {
+                            _MrPoopyButtholeClanPopulation = 0;
+                            _MrPoopyButtholeClanDefeated = true;
+                            Console.WriteLine("The MrPoopyButthole cultists have been obliterated");
+                        }
+                        break;
+                }
+                if (xenomorphClanDefeated == true && yautjaClanDefeated == true && _MrPoopyButtholeClanDefeated == true)
+                {
+                    allDefeated = true;
                 }
             }
             void NewShip(int i)
@@ -337,18 +377,52 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                             Int64 l_alienAttackStrength = i + rand.NextInt64(20);
                             int i_alienAttackStrength = Convert.ToInt32(l_alienAttackStrength);
                             int currentShipStrength = shipList[m].weaponUpgrade;
-                            AlienAttack(i, i_alienAttackStrength, currentShipStrength);
+                            AlienAttack(i, i_alienAttackStrength, currentShipStrength, yautjaClanPopulation, xenomorphClanPopulation, _MrPoopyButtholeClanPopulation);
                         }
                     }
 
                 }
             }
-            void AlienAttack(int i, int i_alienAttackStrength, int currentShipStrength)
+            void AlienAttack(int i, int i_alienAttackStrength, int currentShipStrength, int yautjaClanPopulation, int xenomorphClanPopulation, int _MrPoopyButtholeClanPopulation)
             {
+                do
+                {
+                    i_alienRaceEngaged = rand.Next(2);
+                    raceDefeated = false;
+                    switch (i_alienRaceEngaged)
+                    {
+                        case 0:
+                            if (yautjaClanPopulation == 0)
+                            {
+                                raceDefeated = true;
+                                break;
+                            }
+                            s_alienRaceEngaged = "Yautja";
+                            break;
+                        case 1:
+                            if (xenomorphClanPopulation == 0)
+                            {
+                                raceDefeated = true;
+                                break;
+                            }
+                            s_alienRaceEngaged = "Xenomorph";
+                            break;
+                        case 2:
+                            if (_MrPoopyButtholeClanPopulation == 0)
+                            {
+                                raceDefeated = true;
+                                break;
+                            }
+                            s_alienRaceEngaged = "MrPoopyButthole";
+                            break;
+                    }
+                } 
+                while (raceDefeated == true);
                 if (currentShipStrength*5 >= i_alienAttackStrength)
                 {
-                    Console.WriteLine("Your ship defeated an Alien ship");
+                    Console.WriteLine("Your ship defeated an Alien ship of the {0} clan", s_alienRaceEngaged);
                     currentResources = currentResources + (i_alienAttackStrength * 5);
+                    AlienClans(i_alienRaceEngaged, i_alienAttackStrength);
                 } 
                 else
                 {

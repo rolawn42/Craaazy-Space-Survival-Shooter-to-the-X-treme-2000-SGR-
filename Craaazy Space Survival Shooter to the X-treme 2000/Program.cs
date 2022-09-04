@@ -107,6 +107,8 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
             bool debtCountStart = false;
 
             //Main Loop Control
+            bool turnEnded = true;
+            bool receivedCommand = false;
             bool xenomorphClanDefeated = false;
             bool yautjaClanDefeated = false;
             bool _MrPoopyButtholeClanDefeated = false;
@@ -124,15 +126,46 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
             
             while (allDefeated == false)
             {
-                if (i < 5)
+                turnEnded = false;
+                Console.WriteLine(">> Turn: {0}", (i+1));
+                while (turnEnded == false)
                 {
-                    Tutorial(i);
-                }
-                else
-                {
-                    Console.WriteLine("1: Buy Ship (70 Resources) \n2: Buy Weapons Upgrade (16 Resources) " +
-                        "\n3: Buy Hanger (2 Resources Per Turn) \n4: Hire Crew (2 Resources Per Turn) \n" +
-                        "5: Take On Debt \n6: Pay Off Debt\n 7: Allocate Resources\n 8: End Turn");
+                    if (i < 5)
+                    {
+                        Tutorial(i);
+                    }
+                    else
+                    {
+                        Console.WriteLine("1: Buy Ship (70 Resources) \n2: Buy Weapons Upgrade (16 Resources) " +
+                            "\n3: Buy Hanger (2 Resources Per Turn) \n4: Hire Crew (2 Resources Per Turn) \n" +
+                            "5: Take On Debt \n6: Pay Off Debt\n 7: Allocate Resources\n 8: End Turn");
+                    }
+                    //Print currentResources
+                    Console.WriteLine("> Current Resources: " + currentResources);
+
+                    //Prevents the loop from printing the above statements forever
+                    receivedCommand = false;
+                    if (receivedCommand == false)
+                    {
+                        //Reads your key input
+
+                        ConsoleKeyInfo keyEntered = Console.ReadKey();
+
+                        //Found in Stack Overflow (Title: C# Check if ConsoleKeyInfo.KeyChar is a number)
+                        int inputNumber;
+                        if (Int32.TryParse(keyEntered.KeyChar.ToString(), out inputNumber))
+                        {
+                            Console.WriteLine("");
+                            Console.WriteLine("You pressed {0}", inputNumber);
+                            KeyEntered(inputNumber, i);
+
+                        }
+                        else
+                        {
+                            //I will take this out at the end, but for now I'm using it for testing
+                            Console.WriteLine("Unable to parse");
+                        }
+                    }
                 }
 
                 //Increases each ships resources each turn
@@ -145,26 +178,8 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                     currentDebt = Convert.ToInt32(principal * (1 + (rate * turnsPassed)));
                 }
 
-                //Reads your key input
-                ConsoleKeyInfo keyEntered = Console.ReadKey();
-
-                //Found in Stack Overflow (Title: C# Check if ConsoleKeyInfo.KeyChar is a number)
-                int inputNumber;
-                if (Int32.TryParse(keyEntered.KeyChar.ToString(), out inputNumber))
-                {
-                    Console.WriteLine("");
-                    Console.WriteLine("You pressed {0}", inputNumber);
-                    KeyEntered(inputNumber, i);
-
-                }
-                else
-                {
-                    //I will take this out at the end, but for now I'm using it for testing
-                    Console.WriteLine("Unable to parse");
-                }
-
-                //Print currentResources
-                Console.WriteLine(">> Current Resources: " + currentResources);
+                //Clears your screen at the end of each turn
+                Console.Clear();
 
                 //increment
                 i++;
@@ -172,20 +187,46 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
 
             void KeyEntered(int inputNumber, int i)
             {
-                if (inputNumber > 5 || inputNumber == 0)
+                if (inputNumber > 8 || inputNumber == 0)
                 {
                     Console.WriteLine("That is not a valid input");
+                    receivedCommand = true;
                 } 
                 else
                 {
                     if (inputNumber == 1)
                     {
                         NewShip(i);
-                    } 
+                    }
                     else if (inputNumber == 2)
                     {
                         WeaponsUpgrades();
                     }
+                    else if (inputNumber == 3)
+                    {
+                        buyHanger();
+                    }
+                    else if (inputNumber == 4)
+                    {
+                        Crew();
+                    }
+                    else if (inputNumber == 5)
+                    {
+                        TakeDebt();
+                    }
+                    else if (inputNumber == 6)
+                    {
+                        PayDebt();
+                    }
+                    else if (inputNumber == 7)
+                    {
+                        Allocate();
+                    }
+                    else if (inputNumber == 8)
+                    {
+                        turnEnded = true;
+                    }
+                    receivedCommand = true;
                 }
             }
             void Tutorial(int i)
@@ -194,7 +235,7 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                 {
                     Console.WriteLine("Ships carry your resources, which you need to carry to other planets to trade for more resources " +
                         "\nShips will automatically choose to travel to planets which have beneficial trades");
-                    Console.WriteLine("1: Buy Ship (70 Resources)");
+                    Console.WriteLine("1: Buy Ship (70 Resources) \n 8: End Turn");
                     AlienAttackChance(i);
                 }
                 else if (i == 1 && currentResources < 16)
@@ -203,7 +244,8 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                         "\nWeapon Upgrades will make your ships stronger than other ships" +
                         "\nAnd if they can pilfer you... you can pilfer them");
                     Console.WriteLine("1: Buy Ship (70 Resources)" +
-                        "\n2: Buy Weapons Upgrade (16 Resources");
+                        "\n2: Buy Weapons Upgrade (16 Resources" +
+                        "\n 8: End Turn");
                 }
                 else if (i == 1 && currentResources >= 16)
                 {
@@ -216,7 +258,8 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                         "But be careful, the more debt you have, the more quickly what you owe back will increase");
                     Console.WriteLine("1: Buy Ship (70 Resources)" +
                         "\n2: Buy Weapons Upgrade (16 Resources" +
-                        "\n5: Take On Debt");
+                        "\n5: Take On Debt" +
+                        "\n 8: End Turn");
                     alreadyInShambles = true;
                 }
                 else if (i == 2 && alreadyInShambles == false)
@@ -226,7 +269,8 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                         "\nSo you need you need to rent yourself a hanger");
                     Console.WriteLine("1: Buy Ship (70 Resources)" +
                         "\n2: Buy Weapons Upgrade (16 Resources)" +
-                        "\n3: Rent Hanger (2 Resources Per Turn)");
+                        "\n3: Rent Hanger (2 Resources Per Turn)" +
+                        "\n 8: End Turn");
                 }
                 else if (i == 2 && alreadyInShambles == true)
                 {
@@ -236,7 +280,8 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                     Console.WriteLine("1: Buy Ship (70 Resources)" +
                         "\n2: Buy Weapons Upgrade (16 Resources)" +
                         "\n3: Rent Hanger (2 Resources Per Turn)" +
-                        "\n5: Take On Debt");
+                        "\n5: Take On Debt" +
+                        "\n 8: End Turn");
                 }
                 else if (i == 3 && alreadyInShambles == false)
                 {
@@ -245,7 +290,8 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                     Console.WriteLine("1: Buy Ship (70 Resources)" +
                         "\n2: Buy Weapons Upgrade (16 Resources)" +
                         "\n3: Rent Hanger (2 Resources Per Turn)" +
-                        "\n4: Hire Crew (2 Resources Per Turn)");
+                        "\n4: Hire Crew (2 Resources Per Turn)" +
+                        "\n 8: End Turn");
                 }
                 else if (i == 3 && alreadyInShambles == true)
                 {
@@ -255,7 +301,8 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                         "\n2: Buy Weapons Upgrade (16 Resources)" +
                         "\n3: Rent Hanger (2 Resources Per Turn)" +
                         "\n4: Hire Crew (2 Resources Per Turn)" +
-                        "\n5: Take On Debt");
+                        "\n5: Take On Debt" +
+                        "\n 8: End Turn");
                 }
                 else if (i == 4 && alreadyInShambles == false)
                 {
@@ -264,7 +311,7 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                         "You can always take on some debt\n" +
                         "But be careful, the more debt you have, the more quickly what you owe back will increase");
                     Console.WriteLine("1: Buy Ship (70 Resources) \n2: Buy Weapons Upgrade (16 Resources) " +
-                        "\n3: Buy Hanger (2 Resources Per Turn) \n4: Hire Crew (2 Resources Per Turn) \n5: Take On Debt \n6: End Turn");
+                        "\n3: Buy Hanger (2 Resources Per Turn) \n4: Hire Crew (2 Resources Per Turn) \n5: Take On Debt \n5: Pay Off Debt \n8: End Turn");
                 }
                 else
                 {
@@ -390,7 +437,7 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                 for (int k = 0; k < shipList.Count(); k++)
                 {
                     Console.WriteLine("Ship No. {0} \t Current Upgrade: {1} \t Current Health: {2} \t Current Resources: {3} " +
-                        "\t Has Crew: {4} \t Has Hanger {5} ", shipList[k].shipNumber, shipList[k].shipHealth, shipList[k].weaponUpgrade,
+                        "\t Has Crew: {4} \t Is Broken? {5} ", shipList[k].shipNumber, shipList[k].shipHealth, shipList[k].weaponUpgrade,
                         shipList[k].shipResources, shipList[k].hasCrew, shipList[k].shipBroken);
                 }
             }

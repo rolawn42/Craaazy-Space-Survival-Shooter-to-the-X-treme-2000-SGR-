@@ -4,6 +4,8 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
 {
     internal class Program
     {
+        //TODO: Finish the resources allocation system, update the KeyEntered slot
+        //(or just do it after finishing the Hanger and Crew methods idc)
         public struct Ships
         {
             public int shipNumber;
@@ -11,19 +13,19 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
             public int weaponUpgrade;
             public int shipResources;
             public int turnCreated;
-            public bool crew;
-            public Ships(int shipNumber, int shipHealth, int weaponUpgrade, int shipResources, int turnCreated, bool crew)
+            public bool hasCrew;
+            public bool hasHanger;
+            public Ships(int shipNumber, int shipHealth, int weaponUpgrade, int shipResources, int turnCreated, bool hasCrew, bool hasHanger)
             {
                 this.shipNumber = shipNumber;
                 this.shipHealth = shipHealth;
                 this.weaponUpgrade = weaponUpgrade;
                 this.shipResources = shipResources;
                 this.turnCreated = turnCreated;
-                this.crew = crew;
+                this.hasCrew = hasCrew;
+                this.hasHanger = hasHanger;
             }
-            
         }
-
         static void Main(string[] args)
         {
             Ships ship0 = new Ships();
@@ -41,6 +43,10 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
             int shipNo = 1;
             List<Ships> shipList = new List<Ships>();
             const double resourceIncreaseRate = 0.02;
+            int shipNoEntered;
+            int i_giveOrTake;
+            bool b_giveOrTake;
+
 
             //Weapons Upgrade
             bool b_weaponsUpgrade = false;
@@ -67,28 +73,6 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
             int _MrPoopyButtholeClanPopulation = clanBasePopulation;
             bool raceDefeated = false;
 
-
-            //Stolen Goods Recieved
-            bool b_stolenGoods = false;
-            string s_stolenGoods = " stolen goods ";
-            int i_stolenGoods = 112;
-
-            //Hanger Rental
-            bool b_hangerRental = false;
-            string s_hangerRental = " hanger rental ";
-            int i_hangerRental = 20;
-            string hangerPlanet = "Xylew";
-            string[] a_planets = { "Krypton", "Arrakis", "Xylew", "Arth", 
-                "Dagobah", "Tatooine", "Coruscant", "Mustafar", "Ego", 
-                "Hoth", "Caladan", "Gallifrey"};
-
-            //Debt
-            int currentDebt = 0;
-            double principal = 0;
-            const double rate = 0.05;
-            double turnsPassed = 0;
-            bool debtCountStart = false;
-
             //XenoMorph Clan
 
             const int x_initialNumbers = 1000;
@@ -104,7 +88,24 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
             const int z_initialNumbers = 1000;
             int z_numbers = z_initialNumbers;
 
-            //Loop Control
+            //Hanger Rental
+            bool b_hangerRental = false;
+            string s_hangerRental = " hanger rental ";
+            int numberOfHangers = 0;
+            string[] a_planets = { "Krypton", "Arrakis", "Xylew", "Arth", 
+                "Dagobah", "Tatooine", "Coruscant", "Mustafar", "Ego", 
+                "Hoth", "Caladan", "Gallifrey"};
+            int i_buyOrSell;
+            bool b_buyOrSell = false;
+
+            //Debt
+            int currentDebt = 0;
+            double principal = 0;
+            const double rate = 0.05;
+            double turnsPassed = 0;
+            bool debtCountStart = false;
+
+            //Main Loop Control
             bool xenomorphClanDefeated = false;
             bool yautjaClanDefeated = false;
             bool _MrPoopyButtholeClanDefeated = false;
@@ -119,8 +120,74 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
             string characterName = Console.ReadLine();
             const int startingResources = 100;
             int currentResources = startingResources;
+            
+            while (allDefeated == false)
+            {
+                if (i < 5)
+                {
+                    Tutorial(i);
+                }
+                else
+                {
+                    Console.WriteLine("1: Buy Ship (70 Resources) \n2: Buy Weapons Upgrade (16 Resources) " +
+                        "\n3: Buy Hanger (2 Resources Per Turn) \n4: Hire Crew (2 Resources Per Turn) \n" +
+                        "5: Take On Debt \n6: Pay Off Debt\n 7: Allocate Resources\n 8: End Turn");
+                }
 
-            while (i < 5)
+                //Increases each ships resources each turn
+                ShipResourceManagement(i);
+
+                //Calculates your debt if you have any
+                if (debtCountStart == true)
+                {
+                    turnsPassed++;
+                    currentDebt = Convert.ToInt32(principal * (1 + (rate * turnsPassed)));
+                }
+
+                //Reads your key input
+                ConsoleKeyInfo keyEntered = Console.ReadKey();
+
+                //Found in Stack Overflow (Title: C# Check if ConsoleKeyInfo.KeyChar is a number)
+                int inputNumber;
+                if (Int32.TryParse(keyEntered.KeyChar.ToString(), out inputNumber))
+                {
+                    Console.WriteLine("");
+                    Console.WriteLine("You pressed {0}", inputNumber);
+                    KeyEntered(inputNumber, i);
+
+                }
+                else
+                {
+                    //I will take this out at the end, but for now I'm using it for testing
+                    Console.WriteLine("Unable to parse");
+                }
+
+                //Print currentResources
+                Console.WriteLine(">> Current Resources: " + currentResources);
+
+                //increment
+                i++;
+            }
+
+            void KeyEntered(int inputNumber, int i)
+            {
+                if (inputNumber > 5 || inputNumber == 0)
+                {
+                    Console.WriteLine("That is not a valid input");
+                } 
+                else
+                {
+                    if (inputNumber == 1)
+                    {
+                        NewShip(i);
+                    } 
+                    else if (inputNumber == 2)
+                    {
+                        WeaponsUpgrades();
+                    }
+                }
+            }
+            void Tutorial(int i)
             {
                 if (i == 0)
                 {
@@ -188,7 +255,8 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                         "\n3: Rent Hanger (2 Resources Per Turn)" +
                         "\n4: Hire Crew (2 Resources Per Turn)" +
                         "\n5: Take On Debt");
-                } else if (i == 4 && alreadyInShambles == false)
+                }
+                else if (i == 4 && alreadyInShambles == false)
                 {
                     Console.WriteLine("Oh... almost forgot\n" +
                         "If you ever need some more moohlah\n" +
@@ -202,70 +270,6 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                     Console.WriteLine("1: Buy Ship (70 Resources) \n2: Buy Weapons Upgrade (16 Resources) " +
                         "\n3: Buy Hanger (2 Resources Per Turn) \n4: Hire Crew (2 Resources Per Turn) \n" +
                         "5: Take On Debt \n6: Pay Off Debt\n 7: Allocate Resources\n 8: End Turn");
-                }
-
-                for (int n = 0; n < shipList.Count(); n++)
-                {
-                    double thisShipsResources = Convert.ToDouble(shipList[n].shipResources);
-                    double thisShipsTime = Convert.ToDouble(i - shipList[n].turnCreated);
-
-                    /*
-                     * shipList[n] ??= new Ships();
-                     * shipList[n].shipResources = 0; // (int) (value)
-                     * 
-                     */
-                    Ships temp = shipList[n];
-                    temp.shipResources = Convert.ToInt32(thisShipsResources*(1 + thisShipsTime*resourceIncreaseRate));
-                    shipList[n] = temp;
-                }
-
-                if (debtCountStart == true)
-                {
-                    turnsPassed++;
-                    currentDebt = Convert.ToInt32(principal * (1 + (rate * turnsPassed)));
-                }
-
-                //Reads your key input
-                ConsoleKeyInfo keyEntered = Console.ReadKey();
-
-                //Found in Stack Overflow (Title: C# Check if ConsoleKeyInfo.KeyChar is a number)
-                int inputNumber;
-                if (Int32.TryParse(keyEntered.KeyChar.ToString(), out inputNumber))
-                {
-                    Console.WriteLine("");
-                    Console.WriteLine("You pressed {0}", inputNumber);
-                    KeyEntered(inputNumber, i);
-                    
-                } 
-                else
-                {
-                    //I will take this out at the end, but for now I'm using it for testing
-                    Console.WriteLine("Unable to parse");
-                }
-
-                //Print currentResources
-                Console.WriteLine(">> Current Resources: " + currentResources);
-
-                //increment
-                i++;
-            }
-
-            void KeyEntered(int inputNumber, int i)
-            {
-                if (inputNumber > 5 || inputNumber == 0)
-                {
-                    Console.WriteLine("That is not a valid input");
-                } 
-                else
-                {
-                    if (inputNumber == 1)
-                    {
-                        NewShip(i);
-                    } 
-                    else if (inputNumber == 2)
-                    {
-                        WeaponsUpgrades();
-                    }
                 }
             }
             void AlienClans(int i_alienRaceEngaged, int i_alienAttackStrength)
@@ -313,12 +317,48 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                 } 
                 else
                 {
-                    shipList.Add(new Ships(shipNo, 100, 0, 0, i, false));
+                    shipList.Add(new Ships(shipNo, 100, 0, 0, i, false, false));
                     shipNo++;
                     currentResources = currentResources - i_ship;
                     CurrentFleet();
                 }
                 
+            }
+            void ShipResourceManagement(int i)
+            {
+                //This manages the resource returns each ship give you as it continues its operation
+                for (int n = 0; n < shipList.Count(); n++)
+                {
+                    double thisShipsResources = Convert.ToDouble(shipList[n].shipResources);
+                    //Originally I had it increase per turn but then I realized that could get really busted overtime
+                    //double thisShipsTime = Convert.ToDouble(i - shipList[n].turnCreated);
+
+                    /*
+                     * shipList[n] ??= new Ships();
+                     * shipList[n].shipResources = 0; // (int) (value)
+                     * 
+                     */
+                    Ships temp = shipList[n];
+                    temp.shipResources = Convert.ToInt32(thisShipsResources * resourceIncreaseRate);
+                    shipList[n] = temp;
+                }
+                //This removes the resources for your crew
+                for (int p = 0; p < shipList.Count(); p++)
+                {
+                    if (shipList[p].hasCrew == true)
+                    {
+                        currentResources = currentResources - 2;
+                    }
+                }
+                //This removes resources for the number of hangers you own
+                currentResources = currentResources - (numberOfHangers * 2);
+            }
+            int ShipPicker()
+            {
+                string s_shipNoEntered = Console.ReadLine();
+                int i_shipNoEntered = Convert.ToInt32(s_shipNoEntered);
+                Console.WriteLine("You entered: {0}", i_shipNoEntered);
+                return i_shipNoEntered;
             }
             void CurrentFleet()
             {
@@ -326,24 +366,69 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                 for (int k = 0; k < shipList.Count(); k++)
                 {
                     Console.WriteLine("Ship No. {0} \t Current Upgrade: {1} \t Current Health: {2} \t Current Resources: {3} " +
-                        "\t Has Crew: {4} ", shipList[k].shipNumber, shipList[k].shipHealth, shipList[k].weaponUpgrade,
-                        shipList[k].shipResources, shipList[k].crew);
+                        "\t Has Crew: {4} \t Has Hanger {5} ", shipList[k].shipNumber, shipList[k].shipHealth, shipList[k].weaponUpgrade,
+                        shipList[k].shipResources, shipList[k].hasCrew, shipList[k].hasHanger);
 
                 }
             }
             void Allocate()
             {
-                
+                Console.WriteLine("What ship would you like to allocate resources with?");
+                shipNoEntered = ShipPicker();
+                for(int o = 0; o < shipList.Count(); o++)
+                {
+                    if (shipList[o].shipNumber == shipNoEntered)
+                    {
+                        Console.WriteLine("Would you like to give or take resources (1 / 2)");
+
+                        i_giveOrTake = ShipPicker();
+                        if (i_giveOrTake != 1 && i_giveOrTake != 2)
+                        {
+                            Console.WriteLine("That is not a valid input");
+                        } 
+                        else
+                        {
+                            switch(i_giveOrTake) {
+                                case 1:
+                                    b_giveOrTake = true;
+                                    break;
+                                case 2:
+                                    b_giveOrTake = false;
+                                    break;
+                            }
+                        }
+                        if (b_giveOrTake = true)
+                        {
+                            Console.WriteLine("How many resources would you like to give to this ship?");
+                            int transactionAmount = ShipPicker();
+                            currentResources = currentResources - transactionAmount;
+
+                            Ships temp = shipList[o];
+                            temp.shipResources = temp.shipResources + transactionAmount;
+                            shipList[o] = temp;
+
+                        }
+                        else if (b_giveOrTake = false)
+                        {
+                            Console.WriteLine("How many resources would you like to take from this ship?");
+                            int transactionAmount = ShipPicker();
+                            currentResources = currentResources + transactionAmount;
+
+                            Ships temp = shipList[o];
+                            temp.shipResources = temp.shipResources - transactionAmount;
+                            shipList[o] = temp;
+                        }
+                    }
+                }
+
             }
             void WeaponsUpgrades()
             {
                 Console.WriteLine("What ship would you like to upgrade?");
-                string s_shipNoEntered = Console.ReadLine();
-                int i_shipNoEntered = Convert.ToInt32(s_shipNoEntered);
-                Console.WriteLine("You entered: {0}", i_shipNoEntered);
+                shipNoEntered = ShipPicker();
                 for (int l = 0; l < shipList.Count(); l++)
                 {
-                    if(i_shipNoEntered == shipList[l].shipNumber)
+                    if(shipNoEntered == shipList[l].shipNumber)
                     {
                         Ships temp = shipList[l];
                         temp.weaponUpgrade = 2;
@@ -361,8 +446,34 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                 }
 
             }
-            void Hangers()
+            void buyHanger()
             {
+                Console.WriteLine("Would you like to buy or sell a hanger?(1 / 2)");
+                i_buyOrSell = ShipPicker();
+                if (i_buyOrSell != 1 && i_buyOrSell != 2)
+                {
+                    Console.WriteLine("That is not a valid input");
+                }
+                else
+                {
+                    switch (i_buyOrSell)
+                    {
+                        case 1:
+                            b_buyOrSell = true;
+                            break;
+                        case 2:
+                            b_buyOrSell = false;
+                            break;
+                    }
+                    if (b_buyOrSell == true)
+                    {
+                        numberOfHangers = numberOfHangers + 1;
+                    } 
+                    else if (b_buyOrSell == false) 
+                    {
+                        numberOfHangers = numberOfHangers - 1;
+                    }
+                }
 
             }
             void AlienAttackChance(int i)
@@ -478,7 +589,25 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
             }
             void Crew()
             {
-
+                Console.WriteLine("What ship would you like to give a crew?");
+                shipNoEntered = ShipPicker();
+                for (int q = 0; q < shipList.Count(); q++)
+                {
+                    if (shipList[q].shipNumber == shipNoEntered)
+                    {
+                        if (shipList[q].hasCrew == true )
+                        {
+                            Console.WriteLine("This ship already has a crew");
+                        } 
+                        else if (shipList[q].hasCrew == true)
+                        {
+                            Ships temp = shipList[q];
+                            temp.hasCrew = true;
+                            shipList[q] = temp;
+                            Console.WriteLine("This ship now has a crew");
+                        }
+                    }
+                }
             }
         }
     }

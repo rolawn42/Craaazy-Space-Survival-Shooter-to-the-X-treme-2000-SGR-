@@ -14,16 +14,15 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
             public int shipResources;
             public int turnCreated;
             public bool hasCrew;
-            public bool hasHanger;
-            public Ships(int shipNumber, int shipHealth, int weaponUpgrade, int shipResources, int turnCreated, bool hasCrew, bool hasHanger)
-            {
+            public bool shipBroken;
+            public Ships(int shipNumber, int shipHealth, int weaponUpgrade, int shipResources, int turnCreated, bool hasCrew, bool shipBroken) {
                 this.shipNumber = shipNumber;
                 this.shipHealth = shipHealth;
                 this.weaponUpgrade = weaponUpgrade;
                 this.shipResources = shipResources;
                 this.turnCreated = turnCreated;
                 this.hasCrew = hasCrew;
-                this.hasHanger = hasHanger;
+                this.shipBroken = shipBroken;
             }
         }
         static void Main(string[] args)
@@ -72,6 +71,8 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
             int xenomorphClanPopulation = clanBasePopulation;
             int _MrPoopyButtholeClanPopulation = clanBasePopulation;
             bool raceDefeated = false;
+            int currentShipIndex;
+            int shipDamageSustained = 0;
 
             //XenoMorph Clan
 
@@ -338,9 +339,13 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                      * shipList[n].shipResources = 0; // (int) (value)
                      * 
                      */
-                    Ships temp = shipList[n];
-                    temp.shipResources = Convert.ToInt32(thisShipsResources * resourceIncreaseRate);
-                    shipList[n] = temp;
+                    if (shipList[n].shipBroken == false)
+                    {
+                        Ships temp = shipList[n];
+                        temp.shipResources = Convert.ToInt32(thisShipsResources * resourceIncreaseRate);
+                        shipList[n] = temp;
+                    }
+                    
                 }
                 //This removes the resources for your crew
                 for (int p = 0; p < shipList.Count(); p++)
@@ -352,6 +357,25 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                 }
                 //This removes resources for the number of hangers you own
                 currentResources = currentResources - (numberOfHangers * 2);
+
+                //This heals ships based on the number of hangers you have
+                for(int r = 0; r < (1+numberOfHangers); r++)
+                {
+                    int min = 100;
+                    int minShipIndex = 0;
+                    for(int s = 0; s < shipList.Count(); s++)
+                    {
+                        if(min > shipList[s].shipHealth)
+                        {
+                            min = shipList[s].shipHealth;
+                            minShipIndex = s;
+                        }
+                    }
+                    Ships temp = shipList[minShipIndex];
+                    temp.shipHealth = 100;
+                    temp.shipBroken = false;
+                    shipList[minShipIndex] = temp;
+                }
             }
             int ShipPicker()
             {
@@ -367,8 +391,7 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                 {
                     Console.WriteLine("Ship No. {0} \t Current Upgrade: {1} \t Current Health: {2} \t Current Resources: {3} " +
                         "\t Has Crew: {4} \t Has Hanger {5} ", shipList[k].shipNumber, shipList[k].shipHealth, shipList[k].weaponUpgrade,
-                        shipList[k].shipResources, shipList[k].hasCrew, shipList[k].hasHanger);
-
+                        shipList[k].shipResources, shipList[k].hasCrew, shipList[k].shipBroken);
                 }
             }
             void Allocate()
@@ -488,13 +511,14 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                             Int64 l_alienAttackStrength = i + rand.NextInt64(20);
                             int i_alienAttackStrength = Convert.ToInt32(l_alienAttackStrength);
                             int currentShipStrength = shipList[m].weaponUpgrade;
-                            AlienAttack(i, i_alienAttackStrength, currentShipStrength, yautjaClanPopulation, xenomorphClanPopulation, _MrPoopyButtholeClanPopulation);
+                            currentShipIndex = m;
+                            AlienAttack(i, currentShipIndex, i_alienAttackStrength, currentShipStrength, yautjaClanPopulation, xenomorphClanPopulation, _MrPoopyButtholeClanPopulation);
                         }
                     }
 
                 }
             }
-            void AlienAttack(int i, int i_alienAttackStrength, int currentShipStrength, int yautjaClanPopulation, int xenomorphClanPopulation, int _MrPoopyButtholeClanPopulation)
+            void AlienAttack(int i, int currentShipIndex, int i_alienAttackStrength, int currentShipStrength, int yautjaClanPopulation, int xenomorphClanPopulation, int _MrPoopyButtholeClanPopulation)
             {
                 do
                 {
@@ -527,12 +551,13 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                             s_alienRaceEngaged = "MrPoopyButthole";
                             break;
                     }
-                } 
+                }
                 while (raceDefeated == true);
                 if (currentShipStrength*5 >= i_alienAttackStrength)
                 {
                     Console.WriteLine("Your ship defeated an Alien ship of the {0} clan", s_alienRaceEngaged);
                     currentResources = currentResources + (i_alienAttackStrength * 5);
+                    shipDamageSustained = i_alienAttackStrength - 5;
                     AlienClans(i_alienRaceEngaged, i_alienAttackStrength);
                 } 
                 else
@@ -540,10 +565,29 @@ namespace Craaazy_Space_Survival_Shooter_to_the_X_treme_2000
                     Console.WriteLine("You ship was defeated by an alien ship");
                     currentResources = currentResources - ((i_alienAttackStrength - currentShipStrength * 10) * 5);
                     if (currentResources != Math.Abs(currentResources))
+                        shipDamageSustained = i_alienAttackStrength;
                     {
                         currentResources = 0;
                     }
                 }
+                for (int t = 0; t < shipList.Count(); t++)
+                {
+                    if (currentShipIndex == t)
+                    {
+                        Ships temp1 = shipList[t];
+                        temp1.shipHealth = temp1.shipHealth - shipDamageSustained;
+                        shipList[t] = temp1;
+                        if (Math.Abs(shipList[t].shipHealth) != shipList[t].shipHealth || shipList[t].shipHealth == 0)
+                        {
+                            Ships temp2 = shipList[t];
+                            temp2.shipHealth = 0;
+                            temp2.shipBroken = true;
+                            shipList[t] = temp2;
+                            
+                        }
+                    }
+                }
+
             }
             void TakeDebt()
             {
